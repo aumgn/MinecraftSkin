@@ -40,37 +40,36 @@ public class MinecraftSkin {
         this(ImageIO.read(file));
     }
 
-    protected Raster getHead() {
-        return skin.getData(HEAD);
+    protected Raster getHead(int scale) {
+        return rescale(skin.getData(HEAD), scale);
     }
 
-    protected Raster getHelmet() {
-        Raster helmet = skin.getData(HELMET);
-        return helmet;
+    protected Raster getHelmet(int scale) {
+        return rescale(skin.getData(HELMET), scale);
     }
 
-    protected WritableRaster getHeadWithHelmet() {
-        return composeHelmet(getHead(), getHelmet());
+    protected WritableRaster getHeadWithHelmet(int scale) {
+        return composeHelmet(getHead(scale), getHelmet(scale));
     }
 
-    protected Raster getBody() {
-        return skin.getData(BODY);
+    protected Raster getBody(int scale) {
+        return rescale(skin.getData(BODY), scale);
     }
 
-    protected Raster getLeftArm() {
-        return hflip(getRightArm());
+    protected Raster getLeftArm(int scale) {
+        return hflip(getRightArm(scale));
     }
 
-    protected Raster getRightArm() {
-        return skin.getData(ARM);
+    protected Raster getRightArm(int scale) {
+        return rescale(skin.getData(ARM), scale);
     }
 
-    protected Raster getLeftLeg() {
-        return hflip(getRightLeg());
+    protected Raster getLeftLeg(int scale) {
+        return hflip(getRightLeg(scale));
     }
 
-    protected Raster getRightLeg() {
-        return skin.getData(LEG);
+    protected Raster getRightLeg(int scale) {
+        return rescale(skin.getData(LEG), scale);
     }
 
     protected BufferedImage createImage(int width, int height) {
@@ -81,20 +80,35 @@ public class MinecraftSkin {
     }
 
     public BufferedImage getPreview() {
-        BufferedImage img = createImage(PREVIEW_WIDTH, PREVIEW_HEIGHT);
+        return getPreview(1);
+    }
 
-        img.setData(getHeadWithHelmet().createTranslatedChild( 4,  0));
-        img.setData(          getBody().createTranslatedChild( 4,  8));
-        img.setData(       getLeftArm().createTranslatedChild( 0,  8));
-        img.setData(      getRightArm().createTranslatedChild(12,  8));
-        img.setData(       getLeftLeg().createTranslatedChild( 4, 20));
-        img.setData(      getRightLeg().createTranslatedChild( 8, 20));
+    public BufferedImage getPreview(int scale) {
+        BufferedImage img = createImage(PREVIEW_WIDTH * scale,
+                PREVIEW_HEIGHT * scale);
+
+        img.setData(getHeadWithHelmet(scale)
+                .createTranslatedChild( 4 * scale,  0 * scale));
+        img.setData(getBody(scale)
+                .createTranslatedChild( 4 * scale,  8 * scale));
+        img.setData(getLeftArm(scale)
+                .createTranslatedChild( 0 * scale,  8 * scale));
+        img.setData(getRightArm(scale)
+                .createTranslatedChild(12 * scale,  8 * scale));
+        img.setData(getLeftLeg(scale)
+                .createTranslatedChild( 4 * scale, 20 * scale));
+        img.setData(getRightLeg(scale)
+                .createTranslatedChild( 8 * scale, 20 * scale));
 
         return img;
     }
 
     public BufferedImage getHeadPreview() {
-        return new BufferedImage(skin.getColorModel(), getHeadWithHelmet(),
+        return getHeadPreview(1);
+    }
+
+    public BufferedImage getHeadPreview(int scale) {
+        return new BufferedImage(skin.getColorModel(), getHeadWithHelmet(scale),
                 false, null);
     }
 }
