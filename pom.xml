@@ -5,11 +5,11 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>fr.aumgn</groupId>
-	<artifactId>minecraftskins</artifactId>
-	<version>dev-SNAPSHOT</version>
+	<artifactId>minecraftskin</artifactId>
+	<version>0.1.0-SNAPSHOT</version>
 
-	<name>MinecraftSkins</name>
-	<description>Minecraft Skins Image Generator</description>
+	<name>MinecraftSkin</name>
+	<description>Minecraft skin preview generator</description>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
