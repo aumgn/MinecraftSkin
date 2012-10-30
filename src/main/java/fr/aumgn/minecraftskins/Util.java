@@ -16,7 +16,7 @@ public class Util {
         int height = src.getHeight();
         int maxX   = src.getMinX() + width - 1;
 
-        double[] buf = new double[height * src.getSampleModel().getNumBands()];
+        int[] buf = new int[height * src.getSampleModel().getNumBands()];
         for (int i = 0; i < width; i++) {
             src.getPixels(x + i, y, 1, height, buf);
             dest.setPixels(maxX - i, y, 1, height, buf);
@@ -25,8 +25,7 @@ public class Util {
         return dest;
     }
 
-    public static WritableRaster composeHelmet(Raster head, Raster helmet,
-            double[] alpha) {
+    public static WritableRaster composeHelmet(Raster head, Raster helmet) {
         WritableRaster dest = Raster.createWritableRaster(
                 helmet.getSampleModel(), new Point());
 
@@ -37,15 +36,11 @@ public class Util {
         int width   = head.getWidth();
         int height  = head.getHeight();
 
-        double[] buf = new double[head.getNumBands()];
+        int[] buf = new int[head.getNumBands()];
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 helmet.getPixel(xHelmet + i, yHelmet + j, buf);
-                boolean isAlpha = true;
-                for (int k = 0; k < buf.length; k++) {
-                    isAlpha &= buf[k] == alpha[k];
-                }
-                if (isAlpha) {
+                if (buf[3] == 0x00) {
                     head.getPixel(xHead + i, yHead + j, buf);
                 }
                 dest.setPixel(i, j, buf);

@@ -17,8 +17,6 @@ import javax.imageio.ImageIO;
 
 public class MinecraftSkin {
 
-    private final BufferedImage skin;
-
     public static MinecraftSkin fetch(String username) throws IOException {
         return fromUrl(Constants.getSkinUrl(username));
     }
@@ -27,20 +25,19 @@ public class MinecraftSkin {
         return new MinecraftSkin(url.openStream());
     }
 
+    private final BufferedImage skin;
+
     public MinecraftSkin(BufferedImage skin) {
-        this.skin = skin;
+        SkinTransparency parser = new SkinTransparency(skin);
+        this.skin = parser.convert();
     }
 
     public MinecraftSkin(InputStream inputStream) throws IOException {
-        this.skin = ImageIO.read(inputStream);
+        this(ImageIO.read(inputStream));
     }
 
     public MinecraftSkin(File file) throws IOException {
-        this.skin = ImageIO.read(file);
-    }
-
-    protected double[] getAlphaColor() {
-        return skin.getRaster().getPixel(0, 0, (double[]) null);
+        this(ImageIO.read(file));
     }
 
     protected Raster getHead() {
@@ -53,7 +50,7 @@ public class MinecraftSkin {
     }
 
     protected WritableRaster getHeadWithHelmet() {
-        return composeHelmet(getHead(), getHelmet(), getAlphaColor());
+        return composeHelmet(getHead(), getHelmet());
     }
 
     protected Raster getBody() {
@@ -61,19 +58,19 @@ public class MinecraftSkin {
     }
 
     protected Raster getLeftArm() {
-        return skin.getData(ARM);
+        return hflip(getRightArm());
     }
 
     protected Raster getRightArm() {
-        return hflip(getLeftArm());
+        return skin.getData(ARM);
     }
 
     protected Raster getLeftLeg() {
-        return skin.getData(LEG);
+        return hflip(getRightLeg());
     }
 
     protected Raster getRightLeg() {
-        return hflip(getLeftLeg());
+        return skin.getData(LEG);
     }
 
     protected BufferedImage createImage(int width, int height) {
