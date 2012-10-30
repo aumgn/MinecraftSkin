@@ -1,4 +1,4 @@
-package fr.aumgn.minecraftskins;
+package fr.aumgn.minecraftskin;
 
 import java.awt.Rectangle;
 import java.net.MalformedURLException;

@@ -1,7 +1,7 @@
-package fr.aumgn.minecraftskins;
+package fr.aumgn.minecraftskin;
 
-import static fr.aumgn.minecraftskins.Constants.*;
-import static fr.aumgn.minecraftskins.Util.*;
+import static fr.aumgn.minecraftskin.Constants.*;
+import static fr.aumgn.minecraftskin.Util.*;
 
 import java.awt.Point;
 import java.awt.image.BufferedImage;

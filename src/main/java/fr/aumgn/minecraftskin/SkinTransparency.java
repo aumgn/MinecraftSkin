@@ -1,4 +1,4 @@
-package fr.aumgn.minecraftskins;
+package fr.aumgn.minecraftskin;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
