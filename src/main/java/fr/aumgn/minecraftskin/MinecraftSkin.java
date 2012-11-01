@@ -1,13 +1,10 @@
 package fr.aumgn.minecraftskin;
 
 import static fr.aumgn.minecraftskin.Constants.*;
-import static fr.aumgn.minecraftskin.Util.*;
 
-import java.awt.Point;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,8 +25,8 @@ public class MinecraftSkin {
     private final BufferedImage skin;
 
     public MinecraftSkin(BufferedImage skin) {
-        SkinTransparency parser = new SkinTransparency(skin);
-        this.skin = parser.convert();
+        this.skin = skin;
+        Util.correctHelmetTransparency(skin);
     }
 
     public MinecraftSkin(InputStream inputStream) throws IOException {
@@ -40,43 +37,42 @@ public class MinecraftSkin {
         this(ImageIO.read(file));
     }
 
-    protected Raster getHead(int scale) {
-        return rescale(skin.getData(HEAD), scale);
+    protected void draw(Graphics2D g, int sx, int sy, int sw, int sh, int dx,
+            int dy, int scale) {
+        draw(g, sx, sy, sw, sh, dx, dy, scale, false, false);
     }
 
-    protected Raster getHelmet(int scale) {
-        return rescale(skin.getData(HELMET), scale);
+    protected void draw(Graphics2D g, int sx, int sy, int sw, int sh, int dx,
+            int dy, int scale, boolean flip) {
+        draw(g, sx, sy, sw, sh, dx, dy, scale, flip, false);
     }
 
-    protected WritableRaster getHeadWithHelmet(int scale) {
-        return composeHelmet(getHead(scale), getHelmet(scale));
-    }
+    protected void draw(Graphics2D g, int sx, int sy, int sw, int sh, int dx,
+            int dy, int scale, boolean flip, boolean transparent) {
+        int dx1 = dx * scale;
+        int dx2 = (dx + sw)  * scale;
+        int dy1 = dy * scale;
+        int dy2 = (dy + sh) * scale;
 
-    protected Raster getBody(int scale) {
-        return rescale(skin.getData(BODY), scale);
-    }
+        if (flip) {
+            int tmp = dx1;
+            dx1 = dx2;
+            dx2 = tmp;
+        }
 
-    protected Raster getLeftArm(int scale) {
-        return hflip(getRightArm(scale));
-    }
-
-    protected Raster getRightArm(int scale) {
-        return rescale(skin.getData(ARM), scale);
-    }
-
-    protected Raster getLeftLeg(int scale) {
-        return hflip(getRightLeg(scale));
-    }
-
-    protected Raster getRightLeg(int scale) {
-        return rescale(skin.getData(LEG), scale);
+        if (transparent) {
+            g.drawImage(skin, dx1, dy1, dx2, dy2,
+                    sx, sy, sx + sw, sy + sh,
+                    null);
+        } else {
+            g.drawImage(skin, dx1, dy1, dx2, dy2,
+                    sx, sy, sx + sw, sy + sh,
+                    Color.BLACK, null);
+        }
     }
 
     protected BufferedImage createImage(int width, int height) {
-        SampleModel sm = skin.getSampleModel()
-                .createCompatibleSampleModel(width, height);
-        WritableRaster raster = Raster.createWritableRaster(sm, new Point());
-        return new BufferedImage(skin.getColorModel(), raster, false, null);
+        return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     }
 
     public BufferedImage getPreview() {
@@ -87,19 +83,23 @@ public class MinecraftSkin {
         BufferedImage img = createImage(PREVIEW_WIDTH * scale,
                 PREVIEW_HEIGHT * scale);
 
-        img.setData(getHeadWithHelmet(scale)
-                .createTranslatedChild( 4 * scale,  0 * scale));
-        img.setData(getBody(scale)
-                .createTranslatedChild( 4 * scale,  8 * scale));
-        img.setData(getLeftArm(scale)
-                .createTranslatedChild( 0 * scale,  8 * scale));
-        img.setData(getRightArm(scale)
-                .createTranslatedChild(12 * scale,  8 * scale));
-        img.setData(getLeftLeg(scale)
-                .createTranslatedChild( 4 * scale, 20 * scale));
-        img.setData(getRightLeg(scale)
-                .createTranslatedChild( 8 * scale, 20 * scale));
+        Graphics2D g = img.createGraphics();
+        draw(g, SRC_HEAD_X, SRC_HEAD_Y, SRC_HEAD_W, SRC_HEAD_H,
+                PREVIEW_HEAD_X, PREVIEW_HEAD_Y, scale);
+        draw(g, SRC_HELMET_X, SRC_HELMET_Y, SRC_HELMET_W, SRC_HELMET_H,
+                PREVIEW_HELMET_X, PREVIEW_HELMET_Y, scale, false, true);
+        draw(g, SRC_BODY_X, SRC_BODY_Y, SRC_BODY_W, SRC_BODY_H,
+                PREVIEW_BODY_X, PREVIEW_BODY_Y, scale);
+        draw(g, SRC_ARM_X, SRC_ARM_Y, SRC_ARM_W, SRC_ARM_H,
+                PREVIEW_LEFT_ARM_X, PREVIEW_LEFT_ARM_Y, scale);
+        draw(g, SRC_ARM_X, SRC_ARM_Y, SRC_ARM_W, SRC_ARM_H,
+                PREVIEW_RIGHT_ARM_X, PREVIEW_RIGHT_ARM_Y, scale, true);
+        draw(g, SRC_LEG_X, SRC_LEG_Y, SRC_LEG_W, SRC_LEG_H,
+                PREVIEW_LEFT_LEG_X, PREVIEW_LEFT_LEG_Y, scale);
+        draw(g, SRC_LEG_X, SRC_LEG_Y, SRC_LEG_W, SRC_LEG_H,
+                PREVIEW_RIGHT_LEG_X, PREVIEW_RIGHT_LEG_Y, scale, true);
 
+        g.dispose();
         return img;
     }
 
@@ -108,7 +108,16 @@ public class MinecraftSkin {
     }
 
     public BufferedImage getHeadPreview(int scale) {
-        return new BufferedImage(skin.getColorModel(), getHeadWithHelmet(scale),
-                false, null);
+        BufferedImage img = createImage(HEAD_WIDTH * scale,
+                HEAD_HEIGHT * scale);
+
+        Graphics2D g = img.createGraphics();
+        draw(g, SRC_HEAD_X, SRC_HEAD_Y, SRC_HEAD_W, SRC_HEAD_H,
+                HEAD_HEAD_X, HEAD_HEAD_Y, scale);
+        draw(g, SRC_HELMET_X, SRC_HELMET_Y, SRC_HELMET_W, SRC_HELMET_H,
+                HEAD_HELMET_X, HEAD_HELMET_Y, scale, false, true);
+
+        g.dispose();
+        return img;
     }
 }
